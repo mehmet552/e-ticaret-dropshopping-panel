@@ -1,4 +1,4 @@
-# DropAgent 🤖
+# DropAgent 
 
 AI destekli dropshipping ürün araştırma platformu.
 
@@ -11,10 +11,7 @@ cp .env.example .env
 docker-compose up --build
 ```
 
-Açık adresler:
-- **Uygulama:** http://localhost:3000
-- **API Docs:** http://localhost:8000/docs
-- **MailHog (e-posta):** http://localhost:8025
+
 
 ## API Key Ekleme
 
@@ -27,8 +24,8 @@ Sonra `docker-compose restart backend worker` komutunu çalıştır.
 
 ## Özellikler
 
-- 🤖 AI Agent: Gerçek zamanlı ürün araştırma
-- 📈 Trend Ürünler: Tarihsel veri ile kategori bazlı listeleme
-- 👤 Kullanıcı Hesapları: JWT tabanlı kimlik doğrulama
-- 📋 Takip Listesi: Ürün fiyat takibi
-- 🔔 Bildirimler: Fiyat düşüşünde otomatik uyarı
+-  AI Agent: Gerçek zamanlı ürün araştırma
+-  Trend Ürünler: Tarihsel veri ile kategori bazlı listeleme
+-  Kullanıcı Hesapları: JWT tabanlı kimlik doğrulama
+-  Takip Listesi: Ürün fiyat takibi
+-  Bildirimler: Fiyat düşüşünde otomatik uyarı
