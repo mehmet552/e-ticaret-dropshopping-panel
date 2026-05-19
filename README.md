@@ -1,57 +1,29 @@
-# DropAgent
+# DropAgent 
 
-AI destekli dropshipping ürün araştırma platformu.
+AI destekli Dropshipping  ürün araştırma platformu.
 
-## Hızlı Başlangıç
+## Kurulum
 
-1. Depoyu klonlayın:
-
-```powershell
+```bash
 git clone <repo>
 cd dropagent
+cp .env.example .env
+docker-compose up --build
 ```
 
-2. Ortam dosyası oluşturun:
 
-```powershell
-copy .env.example .env
-```
 
-3. Uygulamayı başlatın:
+## Sahte API ile Çalışma
 
-```powershell
-.\start.ps1
-```
+Bu proje sahte/demo veriler üzerine kurulmuştur. Temel çalışma şekli yerel mock veriler ve DummyJSON sahte ürün kaynağı üzerinden ilerler.
 
-Alternatif olarak:
+Projeyi çalıştırmak için ek `.env` ayarı yapmanız şart değil. Mevcut durumda tüm trend ve ürün verisi yerelde mock/sahte kaynaklardan sağlanır.
 
-```powershell
-python main.py
-```
+## Groq API Entegrasyonu
 
-## Nasıl Çalışır
+Bu proje Groq API anahtarı ile AI Agent için canlı trend verisi alabilir. `services/groq_service.py` üzerinden Groq `completions` endpoint'ine istekte bulunulur.
 
-- `main.py` FastAPI backend ve `static/` içindeki frontend dosyalarını sunar.
-- `start.ps1` Python bağımlılıklarını (`requirements-local.txt`) yükler ve uygulamayı başlatır.
-- Statik varlıklar `/assets` altında sunulur.
-
-## Kullanıcı Deneyimi
-
-- Uygulama ilk açıldığında bir karşılama/giriş sayfası gösterilir.
-- Kullanıcı giriş yapana veya kayıt olana kadar dashboard içeriği gizlidir.
-- Giriş yaptıktan sonra ana menü bir sidebar olarak sunulur.
-- Aydınlık/karanlık tema seçimi geçerlidir ve tüm uygulama bileşenlerini kapsayacak şekilde çalışır.
-
-## Sahte API / Demo Veri
-
-Bu proje sahte/demo veriler üzerine kuruludur. Ürünler, takip listesi ve trend sayfaları yerel mock veriler ile çalışır.
-
-- Projeyi çalıştırmak için Groq API anahtarı zorunlu değildir.
-- Canlı veri yoksa sistem demo/mock moda geçer.
-
-## Groq API Entegrasyonu (Opsiyonel)
-
-AI Agent için canlı trend verisi almak isterseniz `.env` dosyasına aşağıdaki değerleri ekleyin:
+`.env` dosyanıza aşağıdaki satırları ekleyin:
 
 ```env
 GROQ_API_URL=https://api.groq.ai/v1
@@ -60,21 +32,14 @@ GROQ_MODEL=groq-1
 ```
 
 - `GROQ_API_URL` varsayılan olarak `https://api.groq.ai/v1` olarak ayarlanmıştır.
-- `GROQ_MODEL` varsayılan değeri `groq-1`'dir.
-- Eğer `GROQ_API_KEY` yoksa veya Groq isteği başarısız olursa sistem otomatik olarak demo/mocks veriye döner.
+- `GROQ_MODEL` ise `groq-1` varsayımıyla çalışır.
 
-## Öne Çıkan Özellikler
+Eğer `GROQ_API_KEY` yoksa veya Groq isteği başarısız olursa, sistem otomatik olarak demo/mock trend verisine döner.
 
-- AI destekli ürün araştırması
-- Kategori bazlı trend ürünler
-- JWT tabanlı kullanıcı girişi ve kayıt
-- Takip listesi ile hedef fiyat takibi
-- Bildirimler ve okunmamış sayacı
-- Karanlık / aydınlık tema desteği
-- Landing page + auth-first kullanıcı akışı
+## Özellikler
 
-## Notlar
-
-- `görseller/` klasöründeki görüntüler `static/images/` içine kopyalanarak frontend tarafından sunulur.
-- `dropagent.db` proje veritabanını içerir. Çalıştırmadan önce dosyayı silip yeniden başlatırsanız veritabanı yeniden oluşturulur.
-- API belgeleri `http://localhost:8000/docs` adresinden erişilebilir.
+-  AI Agent: Gerçek zamanlı ürün araştırma
+-  Trend Ürünler: Tarihsel veri ile kategori bazlı listeleme
+-  Kullanıcı Hesapları: JWT tabanlı kimlik doğrulama
+-  Takip Listesi: Ürün fiyat takibi
+-  Bildirimler: Fiyat düşüşünde otomatik uyarı
