@@ -1,5 +1,4 @@
 import os
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -10,19 +9,17 @@ from routers import auth, agent, products, watchlist, notifications
 from core.config import settings
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    await create_tables()
-    await seed_database()
-    yield
-
-
 app = FastAPI(
     title="DropAgent API",
     description="AI destekli dropshipping ürün araştırma platformu",
     version="1.0.0",
-    lifespan=lifespan,
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    await create_tables()
+    await seed_database()
 
 app.add_middleware(
     CORSMiddleware,

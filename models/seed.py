@@ -1,192 +1,39 @@
 import asyncio
 import random
 from datetime import datetime, timedelta, date
+import httpx
 from models.database import AsyncSessionLocal, Product, PriceHistory, TrendingProduct
 
+async def fetch_fake_products():
+    """DummyJSON API üzerinden sahte ürün verilerini çeker."""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get("https://dummyjson.com/products?limit=50")
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("products", [])
+    except Exception as e:
+        print(f"Fake API'den veri çekilemedi: {e}")
+    return []
 
-SEED_PRODUCTS = [
-    {
-        "name": "Kablosuz Bluetooth Kulaklık",
-        "category": "Elektronik",
-        "image_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80",
-        "supplier_price": 12.50,
-        "market_price": 49.99,
-        "trend_score": 94,
-        "roi_percent": 299.9,
-        "competition": "Düşük",
-        "monthly_searches": 18500,
-        "ebay_url": "https://www.ebay.com/sch/i.html?_nkw=wireless+bluetooth+earbuds",
-        "amazon_url": "https://www.amazon.com/s?k=wireless+bluetooth+earbuds",
-        "aliexpress_url": "https://www.aliexpress.com/wholesale?SearchText=wireless+earbuds",
-        "trendyol_url": "https://www.trendyol.com/sr?q=bluetooth+kulakl%C4%B1k",
-    },
-    {
-        "name": "LED Şerit Işık (5m)",
-        "category": "Ev & Yaşam",
-        "image_url": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80",
-        "supplier_price": 4.80,
-        "market_price": 22.99,
-        "trend_score": 88,
-        "roi_percent": 379.0,
-        "competition": "Orta",
-        "monthly_searches": 24000,
-        "ebay_url": "https://www.ebay.com/sch/i.html?_nkw=led+strip+lights+5m",
-        "amazon_url": "https://www.amazon.com/s?k=led+strip+lights",
-        "aliexpress_url": "https://www.aliexpress.com/wholesale?SearchText=led+strip+lights",
-        "trendyol_url": "https://www.trendyol.com/sr?q=led+şerit+ışık",
-    },
-    {
-        "name": "Masaj Tabancası Pro",
-        "category": "Spor & Fitness",
-        "image_url": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80",
-        "supplier_price": 18.00,
-        "market_price": 69.99,
-        "trend_score": 91,
-        "roi_percent": 288.8,
-        "competition": "Düşük",
-        "monthly_searches": 15200,
-        "ebay_url": "https://www.ebay.com/sch/i.html?_nkw=massage+gun",
-        "amazon_url": "https://www.amazon.com/s?k=massage+gun",
-        "aliexpress_url": "https://www.aliexpress.com/wholesale?SearchText=massage+gun",
-        "trendyol_url": "https://www.trendyol.com/sr?q=masaj+tabancası",
-    },
-    {
-        "name": "Akıllı Saat Fitness Tracker",
-        "category": "Elektronik",
-        "image_url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80",
-        "supplier_price": 22.00,
-        "market_price": 79.99,
-        "trend_score": 86,
-        "roi_percent": 263.6,
-        "competition": "Yüksek",
-        "monthly_searches": 32000,
-        "ebay_url": "https://www.ebay.com/sch/i.html?_nkw=smart+watch+fitness",
-        "amazon_url": "https://www.amazon.com/s?k=fitness+smartwatch",
-        "aliexpress_url": "https://www.aliexpress.com/wholesale?SearchText=smartwatch+fitness",
-        "trendyol_url": "https://www.trendyol.com/sr?q=akıllı+saat",
-    },
-    {
-        "name": "Aromaterapi Difüzör",
-        "category": "Ev & Yaşam",
-        "image_url": "https://images.unsplash.com/photo-1602928321679-560bb453f190?w=400&q=80",
-        "supplier_price": 8.50,
-        "market_price": 34.99,
-        "trend_score": 79,
-        "roi_percent": 311.6,
-        "competition": "Orta",
-        "monthly_searches": 11800,
-        "ebay_url": "https://www.ebay.com/sch/i.html?_nkw=aromatherapy+diffuser",
-        "amazon_url": "https://www.amazon.com/s?k=aromatherapy+diffuser",
-        "aliexpress_url": "https://www.aliexpress.com/wholesale?SearchText=aroma+diffuser",
-        "trendyol_url": "https://www.trendyol.com/sr?q=difüzör",
-    },
-    {
-        "name": "Direnç Bantları Seti (5'li)",
-        "category": "Spor & Fitness",
-        "image_url": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=80",
-        "supplier_price": 3.20,
-        "market_price": 19.99,
-        "trend_score": 83,
-        "roi_percent": 524.7,
-        "competition": "Orta",
-        "monthly_searches": 14500,
-        "ebay_url": "https://www.ebay.com/sch/i.html?_nkw=resistance+bands+set",
-        "amazon_url": "https://www.amazon.com/s?k=resistance+bands+set",
-        "aliexpress_url": "https://www.aliexpress.com/wholesale?SearchText=resistance+bands",
-        "trendyol_url": "https://www.trendyol.com/sr?q=direnç+bandı",
-    },
-    {
-        "name": "Telefon Lens Seti (4'lü)",
-        "category": "Elektronik",
-        "image_url": "https://images.unsplash.com/photo-1495707902641-75cac588d2e9?w=400&q=80",
-        "supplier_price": 5.50,
-        "market_price": 24.99,
-        "trend_score": 72,
-        "roi_percent": 354.4,
-        "competition": "Düşük",
-        "monthly_searches": 8900,
-        "ebay_url": "https://www.ebay.com/sch/i.html?_nkw=phone+camera+lens+kit",
-        "amazon_url": "https://www.amazon.com/s?k=phone+lens+kit",
-        "aliexpress_url": "https://www.aliexpress.com/wholesale?SearchText=phone+lens+kit",
-        "trendyol_url": "https://www.trendyol.com/sr?q=telefon+lens",
-    },
-    {
-        "name": "Taşınabilir Mini Projeksiyon",
-        "category": "Elektronik",
-        "image_url": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400&q=80",
-        "supplier_price": 35.00,
-        "market_price": 119.99,
-        "trend_score": 76,
-        "roi_percent": 242.8,
-        "competition": "Düşük",
-        "monthly_searches": 7600,
-        "ebay_url": "https://www.ebay.com/sch/i.html?_nkw=mini+portable+projector",
-        "amazon_url": "https://www.amazon.com/s?k=mini+projector+portable",
-        "aliexpress_url": "https://www.aliexpress.com/wholesale?SearchText=mini+projector",
-        "trendyol_url": "https://www.trendyol.com/sr?q=mini+projeksiyon",
-    },
-    {
-        "name": "Köpek GPS Takip Cihazı",
-        "category": "Evcil Hayvan",
-        "image_url": "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=80",
-        "supplier_price": 14.00,
-        "market_price": 54.99,
-        "trend_score": 85,
-        "roi_percent": 292.8,
-        "competition": "Düşük",
-        "monthly_searches": 9800,
-        "ebay_url": "https://www.ebay.com/sch/i.html?_nkw=dog+gps+tracker",
-        "amazon_url": "https://www.amazon.com/s?k=dog+gps+tracker",
-        "aliexpress_url": "https://www.aliexpress.com/wholesale?SearchText=pet+gps+tracker",
-        "trendyol_url": "https://www.trendyol.com/sr?q=köpek+gps",
-    },
-    {
-        "name": "Sera Bitkisi Büyüme Lambası",
-        "category": "Ev & Yaşam",
-        "image_url": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80",
-        "supplier_price": 9.00,
-        "market_price": 35.99,
-        "trend_score": 81,
-        "roi_percent": 299.9,
-        "competition": "Düşük",
-        "monthly_searches": 10200,
-        "ebay_url": "https://www.ebay.com/sch/i.html?_nkw=plant+grow+light",
-        "amazon_url": "https://www.amazon.com/s?k=grow+light+plant",
-        "aliexpress_url": "https://www.aliexpress.com/wholesale?SearchText=plant+grow+light",
-        "trendyol_url": "https://www.trendyol.com/sr?q=bitki+büyüme+lambası",
-    },
-    {
-        "name": "Elektrikli Yüz Temizleme Fırçası",
-        "category": "Güzellik",
-        "image_url": "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&q=80",
-        "supplier_price": 6.50,
-        "market_price": 29.99,
-        "trend_score": 78,
-        "roi_percent": 361.4,
-        "competition": "Orta",
-        "monthly_searches": 12400,
-        "ebay_url": "https://www.ebay.com/sch/i.html?_nkw=electric+facial+cleanser+brush",
-        "amazon_url": "https://www.amazon.com/s?k=electric+face+cleansing+brush",
-        "aliexpress_url": "https://www.aliexpress.com/wholesale?SearchText=facial+cleansing+brush",
-        "trendyol_url": "https://www.trendyol.com/sr?q=yüz+temizleme+fırçası",
-    },
-    {
-        "name": "Akıllı Su Şişesi (Isı Takipli)",
-        "category": "Spor & Fitness",
-        "image_url": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&q=80",
-        "supplier_price": 7.80,
-        "market_price": 32.99,
-        "trend_score": 74,
-        "roi_percent": 323.0,
-        "competition": "Düşük",
-        "monthly_searches": 8100,
-        "ebay_url": "https://www.ebay.com/sch/i.html?_nkw=smart+water+bottle+temperature",
-        "amazon_url": "https://www.amazon.com/s?k=smart+water+bottle",
-        "aliexpress_url": "https://www.aliexpress.com/wholesale?SearchText=smart+water+bottle",
-        "trendyol_url": "https://www.trendyol.com/sr?q=akıllı+su+şişesi",
-    },
-]
-
+def map_category(fake_cat):
+    """API'den gelen kategorileri sistemimizin kategorilerine dönüştürür."""
+    cat_mapping = {
+        "smartphones": "Elektronik",
+        "laptops": "Elektronik",
+        "tablets": "Elektronik",
+        "mobile-accessories": "Elektronik",
+        "fragrances": "Güzellik",
+        "skincare": "Güzellik",
+        "beauty": "Güzellik",
+        "groceries": "Ev & Yaşam",
+        "home-decoration": "Ev & Yaşam",
+        "furniture": "Ev & Yaşam",
+        "kitchen-accessories": "Ev & Yaşam",
+        "sports-accessories": "Spor & Fitness",
+        "mens-shoes": "Spor & Fitness",
+    }
+    return cat_mapping.get(fake_cat, "Genel")
 
 async def seed_database():
     async with AsyncSessionLocal() as db:
@@ -194,18 +41,46 @@ async def seed_database():
         result = await db.execute(select(func.count()).select_from(Product))
         count = result.scalar()
         if count and count > 0:
+            return  # Veritabanı zaten doluysa tekrar ekleme yapma
+
+        print("Sahte API (DummyJSON) üzerinden ürünler çekiliyor ve veritabanı oluşturuluyor...")
+        today = date.today()
+        fake_products = await fetch_fake_products()
+        
+        if not fake_products:
+            print("Sahte ürünler çekilemedi. Veritabanı tohumlanmadı.")
             return
 
-        today = date.today()
-        for i, p_data in enumerate(SEED_PRODUCTS):
+        for dp in fake_products:
+            supplier_p = float(dp.get("price", 10.0))
+            # Satış fiyatını tedarik fiyatının 2 ile 4 katı arasında simüle et (Dropshipping mantığı)
+            market_p = round(supplier_p * random.uniform(2.0, 4.0), 2)
+            roi = round(((market_p - supplier_p) / supplier_p) * 100, 1)
+            
+            p_data = {
+                "name": dp.get("title", "İsimsiz Ürün"),
+                "category": map_category(dp.get("category", "genel")),
+                "image_url": dp.get("thumbnail", ""),
+                "supplier_price": round(supplier_p, 2),
+                "market_price": market_p,
+                "trend_score": int(random.uniform(70, 98)),
+                "roi_percent": roi,
+                "competition": random.choice(["Düşük", "Orta", "Yüksek"]),
+                "monthly_searches": int(random.uniform(2000, 45000)),
+                "ebay_url": f"https://www.ebay.com/sch/i.html?_nkw={dp.get('title', '').replace(' ', '+')}",
+                "amazon_url": f"https://www.amazon.com/s?k={dp.get('title', '').replace(' ', '+')}",
+                "aliexpress_url": f"https://www.aliexpress.com/wholesale?SearchText={dp.get('title', '').replace(' ', '+')}",
+                "trendyol_url": f"https://www.trendyol.com/sr?q={dp.get('title', '').replace(' ', '+')}",
+            }
+            
             product = Product(**p_data)
             db.add(product)
             await db.flush()
 
-            # Price history (last 30 days)
+            # Geçmiş 30 günün fiyat geçmişini simüle et
             base_price = p_data["market_price"]
             for days_ago in range(30, -1, -1):
-                variation = random.uniform(-0.08, 0.05)
+                variation = random.uniform(-0.05, 0.08)
                 hist_price = round(base_price * (1 + variation), 2)
                 ph = PriceHistory(
                     product_id=product.id,
@@ -214,7 +89,7 @@ async def seed_database():
                 )
                 db.add(ph)
 
-            # Trending records (last 7 days)
+            # Geçmiş 7 günün trend istatistiklerini simüle et
             for days_ago in range(7, -1, -1):
                 tp = TrendingProduct(
                     product_id=product.id,
@@ -225,3 +100,4 @@ async def seed_database():
                 db.add(tp)
 
         await db.commit()
+        print(f"Başarıyla {len(fake_products)} ürün sahte API'den çekilip veritabanına kaydedildi.")

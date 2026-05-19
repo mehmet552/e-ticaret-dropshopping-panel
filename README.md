@@ -13,14 +13,28 @@ docker-compose up --build
 
 
 
-## API Key Ekleme
+## Sahte API ile Çalışma
 
-`.env` dosyasını düzenle:
+Bu proje sahte/demo veriler üzerine kurulmuştur. Temel çalışma şekli yerel mock veriler ve DummyJSON sahte ürün kaynağı üzerinden ilerler.
+
+Projeyi çalıştırmak için ek `.env` ayarı yapmanız şart değil. Mevcut durumda tüm trend ve ürün verisi yerelde mock/sahte kaynaklardan sağlanır.
+
+## Groq API Entegrasyonu
+
+Bu proje Groq API anahtarı ile AI Agent için canlı trend verisi alabilir. `services/groq_service.py` üzerinden Groq `completions` endpoint'ine istekte bulunulur.
+
+`.env` dosyanıza aşağıdaki satırları ekleyin:
+
+```env
+GROQ_API_URL=https://api.groq.ai/v1
+GROQ_API_KEY=<YOUR_GROQ_API_KEY>
+GROQ_MODEL=groq-1
 ```
-EBAY_API_KEY=senin_key_burada
-RAPIDAPI_KEY=senin_key_burada
-```
-Sonra `docker-compose restart backend worker` komutunu çalıştır.
+
+- `GROQ_API_URL` varsayılan olarak `https://api.groq.ai/v1` olarak ayarlanmıştır.
+- `GROQ_MODEL` ise `groq-1` varsayımıyla çalışır.
+
+Eğer `GROQ_API_KEY` yoksa veya Groq isteği başarısız olursa, sistem otomatik olarak demo/mock trend verisine döner.
 
 ## Özellikler
 

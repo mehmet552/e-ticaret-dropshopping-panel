@@ -14,15 +14,16 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
 
-    # API Keys (optional)
-    EBAY_API_KEY: str = ""
-    RAPIDAPI_KEY: str = ""
-
     # Email
     SMTP_HOST: str = "mailhog"
     SMTP_PORT: int = 1025
     SMTP_USER: str = ""
     SMTP_PASS: str = ""
+
+    # Groq API
+    GROQ_API_URL: str = "https://api.groq.ai/v1"
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "groq-1"
 
     # Frontend
     FRONTEND_URL: str = "http://localhost:3000"

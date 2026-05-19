@@ -27,6 +27,18 @@ const API = {
 // State
 let user = null;
 let unreadCount = 0;
+let theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+function setTheme(value) {
+  theme = value;
+  document.documentElement.dataset.theme = value;
+  localStorage.setItem('theme', value);
+}
+
+function toggleTheme() {
+  setTheme(theme === 'dark' ? 'light' : 'dark');
+  route();
+}
 
 // Router
 const ROUTES = {'#/':pageAgent,'#/trends':pageTrends,'#/watchlist':pageWatchlist,'#/notifications':pageNotifs,'#/login':pageLogin,'#/register':pageRegister};
@@ -35,6 +47,7 @@ window.addEventListener('hashchange', route);
 window.addEventListener('DOMContentLoaded', init);
 
 async function init() {
+  setTheme(theme);
   const tok = T();
   if (tok) { try { user = await API.me(); } catch { localStorage.removeItem('token'); } }
   if (user) refreshUnread();
@@ -57,7 +70,7 @@ async function refreshUnread() {
 // Sidebar
 function renderSidebar() {
   const nav = [
-    {h:'#/',i:'⚡',l:'AI Agent'},
+    {h:'#/',i:'📊',l:'Ürün Araştırması'},
     {h:'#/trends',i:'📈',l:'Trend Ürünler'},
     {h:'#/watchlist',i:'🔖',l:'Takip Listesi',auth:true},
     {h:'#/notifications',i:'🔔',l:'Bildirimler',auth:true,badge:true},
@@ -80,7 +93,9 @@ function renderSidebar() {
           <div><div class="sb-uname">${user.name}</div><div class="sb-uemail">${user.email}</div></div>
         </div>
         <button class="sb-item" onclick="logout()"><span>🚪</span>Çıkış Yap</button>
-      `:`<a class="sb-item" href="#/login"><span>👤</span>Giriş Yap</a>`}
+      `:`<div style="display:grid;gap:8px">
+        <a class="sb-item" href="#/login"><span>👤</span>Giriş Yap</a>
+      </div>`}
     </div>
   </aside>`;
 }
@@ -88,7 +103,15 @@ function renderSidebar() {
 function layout(title, sub, content) {
   document.getElementById('app').innerHTML = renderSidebar() + `
     <main class="main">
-      <div class="ph"><h1 class="pt">${title}</h1><p class="ps">${sub}</p></div>
+      <div class="ph">
+        <div class="topbar">
+          <div>
+            <h1 class="pt">${title}</h1>
+            <p class="ps">${sub}</p>
+          </div>
+          <button class="btn btn-s btn-sm theme-toggle" onclick="toggleTheme()">${theme==='dark'?'☀️ Aydınlık Mod':'🌙 Karanlık Mod'}</button>
+        </div>
+      </div>
       <div class="pc" id="pc">${content}</div>
     </main>`;
 }
@@ -167,7 +190,7 @@ const CATS = [{k:'genel',l:'Genel',e:'🌐'},{k:'elektronik',l:'Elektronik',e:'�
 let selCat = 'genel';
 
 function pageAgent() {
-  layout('AI Agent','Dropshipping için en karlı ürünleri otomatik araştır',`
+  layout('Ürün Araştırması','Dropshipping için en karlı ürünleri keşfedin',`
     <div class="agent-wrap">
       <div id="agent-panel">
         <div class="card glass mb4">
@@ -181,8 +204,8 @@ function pageAgent() {
       </div>
       <div id="agent-results">
         <div class="card glass center"><div style="font-size:40px;margin-bottom:12px">⚡</div>
-          <div style="font-size:15px;font-weight:600;margin-bottom:6px">AI Agent Hazır</div>
-          <div style="font-size:13px;color:var(--txt-m);max-width:280px;margin:0 auto">Kategori seçin ve araştırmayı başlatın. Agent gerçek zamanlı ürünleri tarar.</div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:6px">Araştırma Hazır</div>
+          <div style="font-size:13px;color:var(--txt-m);max-width:280px;margin:0 auto">Kategori seçin ve en karlı ürünleri hızlıca keşfedin.</div>
         </div>
       </div>
     </div>`);
@@ -346,7 +369,10 @@ function pageLogin() {
   document.getElementById('app').innerHTML = `
     <div class="auth-wrap">
       <div class="auth-card glass">
-        <div class="auth-logo" onclick="go('#/')"><span class="sb-dot"></span>DropAgent</div>
+        <div class="auth-toolbar">
+          <div class="auth-logo" onclick="go('#/')"><span class="sb-dot"></span>DropAgent</div>
+          <button class="btn btn-s btn-sm" onclick="toggleTheme()">${theme==='dark'?'☀️ Aydınlık Mod':'🌙 Karanlık Mod'}</button>
+        </div>
         <div class="at">Giriş Yap</div>
         <div class="as">Hesabınıza giriş yapın</div>
         <div id="auth-err"></div>
@@ -379,7 +405,10 @@ function pageRegister() {
   document.getElementById('app').innerHTML = `
     <div class="auth-wrap">
       <div class="auth-card glass">
-        <div class="auth-logo" onclick="go('#/')"><span class="sb-dot"></span>DropAgent</div>
+        <div class="auth-toolbar">
+          <div class="auth-logo" onclick="go('#/')"><span class="sb-dot"></span>DropAgent</div>
+          <button class="btn btn-s btn-sm" onclick="toggleTheme()">${theme==='dark'?'☀️ Aydınlık Mod':'🌙 Karanlık Mod'}</button>
+        </div>
         <div class="at">Kayıt Ol</div>
         <div class="as">Ücretsiz hesap oluşturun</div>
         <div id="auth-err"></div>

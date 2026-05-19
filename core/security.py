@@ -9,7 +9,7 @@ from sqlalchemy import select
 from core.config import settings
 from models.database import get_db, User
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
