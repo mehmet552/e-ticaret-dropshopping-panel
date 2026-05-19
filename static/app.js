@@ -41,7 +41,7 @@ function toggleTheme() {
 }
 
 // Router
-const ROUTES = {'#/':pageAgent,'#/trends':pageTrends,'#/watchlist':pageWatchlist,'#/notifications':pageNotifs,'#/login':pageLogin,'#/register':pageRegister};
+const ROUTES = {'#/':pageAgent,'#/welcome':pageLanding,'#/trends':pageTrends,'#/watchlist':pageWatchlist,'#/notifications':pageNotifs,'#/login':pageLogin,'#/register':pageRegister};
 
 window.addEventListener('hashchange', route);
 window.addEventListener('DOMContentLoaded', init);
@@ -55,9 +55,11 @@ async function init() {
 }
 
 function route() {
-  const h = location.hash||'#/';
+  const h = location.hash||'#/welcome';
+  if (user && h === '#/welcome') { location.hash = '#/'; return; }
+  if (!user && ['#/','#/trends','#/watchlist','#/notifications'].includes(h)) { location.hash = '#/welcome'; return; }
   const fn = ROUTES[h];
-  fn ? fn() : (location.hash='#/');
+  fn ? fn() : (location.hash='#/welcome');
 }
 
 function go(h) { location.hash = h; }
@@ -116,7 +118,7 @@ function layout(title, sub, content) {
     </main>`;
 }
 
-function logout() { localStorage.removeItem('token'); user=null; unreadCount=0; go('#/login'); }
+function logout() { localStorage.removeItem('token'); user=null; unreadCount=0; go('#/welcome'); }
 
 // Product card helper
 function compBadge(c) {
@@ -365,12 +367,32 @@ function timeAgo(s) {
 }
 
 // === PAGE: LOGIN ===
+function pageLanding() {
+  document.getElementById('app').innerHTML = `
+    <div class="landing-wrap">
+      <div class="landing-card glass">
+        <div class="landing-hero">
+          <div class="sb-logo" style="font-size:26px;">DropAgent</div>
+          <div class="landing-title">Dropshipping ara, kârını büyüt.</div>
+          <div class="landing-sub">AI destekli ürün araştırması, trend keşfi ve fiyat takibi tek panelde. Kaydol veya giriş yap, sana özel fırsatları görmeye başla.</div>
+          <div class="landing-actions">
+            <button class="btn btn-p" onclick="go('#/login')">Giriş Yap</button>
+            <button class="btn btn-s" onclick="go('#/register')">Kayıt Ol</button>
+          </div>
+        </div>
+        <div class="landing-visual">
+          <img src="/assets/images/Gemini_Generated_Image_anpnhyanpnhyanpn.png" alt="DropAgent alışveriş görseli">
+        </div>
+      </div>
+    </div>`;
+}
+
 function pageLogin() {
   document.getElementById('app').innerHTML = `
     <div class="auth-wrap">
       <div class="auth-card glass">
         <div class="auth-toolbar">
-          <div class="auth-logo" onclick="go('#/')"><span class="sb-dot"></span>DropAgent</div>
+          <div class="auth-logo" onclick="go('#/welcome')"><span class="sb-dot"></span>DropAgent</div>
           <button class="btn btn-s btn-sm" onclick="toggleTheme()">${theme==='dark'?'☀️ Aydınlık Mod':'🌙 Karanlık Mod'}</button>
         </div>
         <div class="at">Giriş Yap</div>
